@@ -1,7 +1,7 @@
 import { ParsedQuery } from "query-string"
 
 export interface ISocketQuery extends ParsedQuery {
-  placeId: string
+  deviceType: string
   EIO: string
   t: string
   transport: string

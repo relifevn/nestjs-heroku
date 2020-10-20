@@ -12,3 +12,9 @@ export enum SOCKET_EVENT {
     CAMERA_FILTER_GET = 'camera-filter-get',
 
 }
+
+export enum DEVICE_TYPE {
+    RASPBERRY = 'raspberry',
+    WEB = 'web',
+    JETSON_NANO = 'jetson'
+}

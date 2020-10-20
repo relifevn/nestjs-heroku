@@ -1,6 +1,6 @@
 import { CustomDocument } from '../../common/interfaces'
 
 export interface ISocket extends CustomDocument {
-    placeId: string
+    deviceType: string
     socketId: string
 }

@@ -18,17 +18,17 @@ export class EventsService {
     console.log('[INIT] EventsService')
   }
 
-  getPlaceIdFromClientSocketRequest(socket: Socket): string {
+  getDeviceTypeFromClientSocketRequest(socket: Socket): string {
     const request = socket.request as IncomingMessage
     const url = URLParse(request.url)
     const query = QueryString.parse(url.query.toString()) as ISocketQuery
-    const placeId = query.placeId
-    return placeId
+    const deviceType = query.deviceType
+    return deviceType
   }
 
-  async userConnecting(placeId: string, socket: Socket): Promise<ISocket[]> {
+  async userConnecting(deviceType: string, socket: Socket): Promise<ISocket[]> {
     return this.socketModel.insertMany([{
-      placeId,
+      deviceType,
       socketId: socket.id,
     }] as ISocket[])
   }

@@ -22,7 +22,7 @@ import { EventsService } from './events.service'
 import { ObjectId } from 'mongodb'
 import { ISocket } from './interfaces'
 
-import { SOCKET_EVENT } from './constants'
+import { DEVICE_TYPE, SOCKET_EVENT } from './constants'
 import { ConfigService } from 'src/config/config.service'
 import { TemperaturePostDto } from './dtos'
 
@@ -52,7 +52,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @MessageBody() temperaturePostDto: TemperaturePostDto,
   ): Promise<void> {
     if (!socket) { return }
-    
+    console.log(SOCKET_EVENT.TEMPERATURE_POST, temperaturePostDto)
   }
 
   async handleDisconnect(socket: Socket) {
@@ -65,8 +65,14 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     ...args: any[]
   ): Promise<void> {
     this.logger.warn(`Client connected: ${socket.id}`)
-    const placeId = this.eventsService.getPlaceIdFromClientSocketRequest(socket)
-    await this.eventsService.userConnecting(placeId, socket)
+    const deviceType = this.eventsService.getDeviceTypeFromClientSocketRequest(socket)
+    if (!deviceType || [DEVICE_TYPE.JETSON_NANO, DEVICE_TYPE.RASPBERRY, DEVICE_TYPE.WEB].findIndex(e => e == deviceType) == -1) {
+      console.log('Server rejected socket connection!')
+      socket.disconnect(true)
+      return
+    }
+    console.log(`[INFO] New connection socket ${socket.id} - ${deviceType}`)
+    await this.eventsService.userConnecting(deviceType, socket)
   }
 
   handleError(
@@ -75,8 +81,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     console.log('[ERROR] handleError', socket.id)
   }
 
-  async getWebSockets(placeId: string): Promise<ISocket[]> {
-    return this.eventsService.getActiveSockets(this.server, placeId)
+  async getWebSockets(deviceType: string): Promise<ISocket[]> {
+    return this.eventsService.getActiveSockets(this.server, deviceType)
   }
 
 }
