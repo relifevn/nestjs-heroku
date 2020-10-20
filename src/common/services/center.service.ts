@@ -8,6 +8,9 @@ export class CenterService {
     public newTemperatureDataSubject = new Subject<ITemperatureData>()
     public newTemperatureData$ = this.newTemperatureDataSubject.asObservable()
 
+    public newCameraRawSubject = new Subject<string>()
+    public newCameraRaw$ = this.newCameraRawSubject.asObservable()
+
     constructor() {
 
     }

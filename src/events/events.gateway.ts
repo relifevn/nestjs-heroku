@@ -45,6 +45,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.centerService.newTemperatureData$.subscribe(async data => {
       await this.sendTemperatureDataToWeb(data)
     })
+    this.centerService.newCameraRaw$.subscribe(async data => {
+      await this.sendCameraRawDataToWeb(data)
+    })
   }
 
   afterInit(server: Server) {
@@ -68,6 +71,24 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }))
   }
 
+  async sendCameraRawDataToWeb(img: string): Promise<void> {
+    if (!this.server) {
+      // Very brutal step to prevent bug!
+      return
+    }
+    const sockets = await this.getWebSockets(DEVICE_TYPE.WEB)
+    await Promise.all(sockets.map(async socket => {
+      const socketIO = await this.eventsService.getSocketConnection(this.server, socket.socketId)
+      if (socketIO) {
+        socketIO.emit(
+          SOCKET_EVENT.CAMERA_RAW_GET,
+          // `data:image/jpeg;charset=utf-8;base64, ${img}`,
+          `data:image/png;base64, ${img}`
+        )
+      }
+    }))
+  }
+
   @SubscribeMessage(SOCKET_EVENT.TEMPERATURE_POST)
   @Post(SOCKET_EVENT.TEMPERATURE_POST)
   async addTemperatureData(
@@ -77,6 +98,16 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     if (!socket) { return }
     temperaturePostDto = JSON.parse(String(temperaturePostDto)) as TemperaturePostDto
     this.eventsService.addTemperatureData(temperaturePostDto)
+  }
+
+  @SubscribeMessage(SOCKET_EVENT.CAMERA_RAW_POST)
+  @Post(SOCKET_EVENT.CAMERA_RAW_POST)
+  async addCameraRawData(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() img: string,
+  ): Promise<void> {
+    if (!socket) { return }
+    this.eventsService.addCameraRawData(img)
   }
 
   async handleDisconnect(socket: Socket) {

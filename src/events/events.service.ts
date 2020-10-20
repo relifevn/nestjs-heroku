@@ -31,6 +31,10 @@ export class EventsService {
     await this.flameService.addTemperatureData(temperaturePostDto)
   }
 
+  async addCameraRawData(img: string): Promise<void> {
+    this.centerService.newCameraRawSubject.next(img)
+  }
+
   getDeviceTypeFromClientSocketRequest(socket: Socket): string {
     const request = socket.request as IncomingMessage
     const url = URLParse(request.url)
