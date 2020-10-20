@@ -5,4 +5,8 @@ export const TemperatureSchema = new Schema({
         required: true,
         type: Number,
     },
+    createdAt: {
+        type: Date,
+        required: true,
+    },
 })  

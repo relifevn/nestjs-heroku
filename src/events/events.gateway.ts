@@ -25,6 +25,8 @@ import { ISocket } from './interfaces'
 import { DEVICE_TYPE, SOCKET_EVENT } from './constants'
 import { ConfigService } from 'src/config/config.service'
 import { TemperaturePostDto } from './dtos'
+import { ITemperature, ITemperatureData } from 'src/flame/interfaces'
+import { CenterService } from 'src/common/services'
 
 @Controller('events')
 @WebSocketGateway()
@@ -38,21 +40,43 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   constructor(
     private readonly eventsService: EventsService,
     private readonly configService: ConfigService,
+    private readonly centerService: CenterService,
   ) {
+    this.centerService.newTemperatureData$.subscribe(async data => {
+      await this.sendTemperatureDataToWeb(data)
+    })
   }
 
   afterInit(server: Server) {
     this.logger.warn('[INIT] Websocket')
   }
 
+  async sendTemperatureDataToWeb(data: ITemperatureData): Promise<void> {
+    if (!this.server) {
+      // Very brutal step to prevent bug!
+      return
+    }
+    const sockets = await this.getWebSockets(DEVICE_TYPE.WEB)
+    await Promise.all(sockets.map(async socket => {
+      const socketIO = await this.eventsService.getSocketConnection(this.server, socket.socketId)
+      if (socketIO) {
+        socketIO.emit(
+          SOCKET_EVENT.TEMPERATURE_GET,
+          data,
+        )
+      }
+    }))
+  }
+
   @SubscribeMessage(SOCKET_EVENT.TEMPERATURE_POST)
   @Post(SOCKET_EVENT.TEMPERATURE_POST)
-  async sendMessages(
+  async addTemperatureData(
     @ConnectedSocket() socket: Socket,
     @MessageBody() temperaturePostDto: TemperaturePostDto,
   ): Promise<void> {
     if (!socket) { return }
-    console.log(SOCKET_EVENT.TEMPERATURE_POST, temperaturePostDto)
+    temperaturePostDto = JSON.parse(String(temperaturePostDto)) as TemperaturePostDto
+    this.eventsService.addTemperatureData(temperaturePostDto)
   }
 
   async handleDisconnect(socket: Socket) {
@@ -64,14 +88,15 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     socket: Socket,
     ...args: any[]
   ): Promise<void> {
-    this.logger.warn(`Client connected: ${socket.id}`)
     const deviceType = this.eventsService.getDeviceTypeFromClientSocketRequest(socket)
     if (!deviceType || [DEVICE_TYPE.JETSON_NANO, DEVICE_TYPE.RASPBERRY, DEVICE_TYPE.WEB].findIndex(e => e == deviceType) == -1) {
       console.log('Server rejected socket connection!')
       socket.disconnect(true)
       return
     }
-    console.log(`[INFO] New connection socket ${socket.id} - ${deviceType}`)
+    this.getWebSockets(DEVICE_TYPE.RASPBERRY).then(() => {})
+    this.getWebSockets(DEVICE_TYPE.JETSON_NANO).then(() => {})
+    this.logger.log(`[INFO] New connection socket ${socket.id} - ${deviceType}`)
     await this.eventsService.userConnecting(deviceType, socket)
   }
 

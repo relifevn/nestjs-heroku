@@ -7,6 +7,10 @@ import { SOCKET_MODEL } from 'src/common/constants'
 import { InjectModel } from '@nestjs/mongoose'
 import { ISocket, ISocketQuery } from './interfaces'
 import { CustomModel } from 'src/common/interfaces'
+import { TemperaturePostDto } from './dtos'
+import { ITemperature } from 'src/flame/interfaces'
+import { CenterService } from 'src/common/services'
+import { FlameService } from 'src/flame/flame.service'
 
 @Injectable()
 export class EventsService {
@@ -14,8 +18,17 @@ export class EventsService {
   constructor(
     @InjectModel(SOCKET_MODEL)
     private readonly socketModel: CustomModel<ISocket, {}>,
+
+    private readonly centerService: CenterService,
+    private readonly flameService: FlameService,
   ) {
     console.log('[INIT] EventsService')
+  }
+
+  async addTemperatureData(
+    temperaturePostDto: TemperaturePostDto,
+  ): Promise<void> {
+    await this.flameService.addTemperatureData(temperaturePostDto)
   }
 
   getDeviceTypeFromClientSocketRequest(socket: Socket): string {
@@ -82,8 +95,8 @@ export class EventsService {
     return cachedSocket
   }
 
-  async getActiveSockets(server: Server, placeId: string): Promise<ISocket[]> {
-    const sockets = await this.socketModel.find({ placeId }).lean() as ISocket[]
+  async getActiveSockets(server: Server, deviceType: string): Promise<ISocket[]> {
+    const sockets = await this.socketModel.find({ deviceType }).lean() as ISocket[]
     const connectedSockets = await Promise.all(sockets.map(async cachedSocket => {
       const socket = await this.getSocketConnection(server, cachedSocket.socketId)
       if (socket) {
