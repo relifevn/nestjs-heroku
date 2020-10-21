@@ -159,7 +159,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   ): Promise<void> {
     if (!socket) { return }
     gpsPostDto = new GPSPostDto(gpsPostDto)
-    this.eventsService.addGPSData(socket, gpsPostDto)
+    await this.eventsService.addGPSData(socket, gpsPostDto)
   }
 
   @SubscribeMessage(SOCKET_EVENT.TEMPERATURE_POST)
