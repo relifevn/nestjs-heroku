@@ -11,5 +11,7 @@ export enum SOCKET_EVENT {
     CAMERA_FILTER_POST = 'camera-filter-post',
     CAMERA_FILTER_GET = 'camera-filter-get',
 
+    GPS_POST = 'gps-post',
+    GPS_GET = 'gps-get',
 }
 

@@ -24,7 +24,7 @@ import { ISocket } from './interfaces'
 
 import { DEVICE_TYPE, SOCKET_EVENT } from './constants'
 import { ConfigService } from 'src/config/config.service'
-import { TemperaturePostDto } from './dtos'
+import { TemperaturePostDto, GPSPostDto } from './dtos'
 import { ITemperature, ITemperatureData } from 'src/flame/interfaces'
 import { CenterService } from 'src/common/services'
 
@@ -87,6 +87,17 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         )
       }
     }))
+  }
+
+  @SubscribeMessage(SOCKET_EVENT.GPS_POST)
+  @Post(SOCKET_EVENT.GPS_POST)
+  async addGPSData(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() gpsPostDto: GPSPostDto,
+  ): Promise<void> {
+    if (!socket) { return }
+    gpsPostDto = new GPSPostDto(gpsPostDto)
+    this.eventsService.addGPSData(socket, gpsPostDto)
   }
 
   @SubscribeMessage(SOCKET_EVENT.TEMPERATURE_POST)

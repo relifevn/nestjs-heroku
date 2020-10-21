@@ -13,6 +13,24 @@ export class ConfigService {
       PLACE_ID_DROWSINESS_WEB: 'drowsinessWeb',
       PLACE_ID_PI: 'pi',
       PLACE_ID_JETSON_NANO: 'jet',
+      GMAIL_USER: 'thcshiepphuoc2020@gmail.com',
+      GMAIL_PASSWORD: 'khkt2020',
+    }
+  }
+
+  get gmailTransport() {
+    return {
+      host: 'smtp.googlemail.com',
+      port: 465,
+      secure: true,
+      auth: this.gmailAuthentication,
+    }
+  }
+
+  get gmailAuthentication(): { user: string, pass: string } {
+    return {
+      user: this.envConfig.GMAIL_USER,
+      pass: this.envConfig.GMAIL_PASSWORD,
     }
   }
 
