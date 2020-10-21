@@ -5,6 +5,9 @@ export enum SOCKET_EVENT {
     FLAME_SENSOR_POST = 'flame-sensor-post',
     FLAME_SENSOR_GET = 'flame-sensor-get',
 
+    DETECT_FLAME_POST = 'detect-flame-post',
+    DETECT_FLAME_GET = 'detect-flame-get',
+
     CAMERA_RAW_POST = 'camera-raw-post',
     CAMERA_RAW_GET = 'camera-raw-get',
 
