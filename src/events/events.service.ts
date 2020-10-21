@@ -66,6 +66,10 @@ export class EventsService {
     this.centerService.newCameraRawSubject.next(img)
   }
 
+  async addCameraFilterData(img: string): Promise<void> {
+    this.centerService.newCameraFilterSubject.next(img)
+  }
+
   getDeviceTypeFromClientSocketRequest(socket: Socket): string {
     const request = socket.request as IncomingMessage
     const url = URLParse(request.url)

@@ -48,13 +48,22 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.centerService.newCameraRaw$.subscribe(async data => {
       await this.sendCameraRawDataToWeb(data)
     })
+    this.centerService.newCameraFilter$.subscribe(async data => {
+      await this.sendCameraFilterDataToWeb(data)
+    })
+    this.centerService.newFlameSensorData$.subscribe(async data => {
+      await this.sendFlameSensorDataToWeb(data)
+    })
+    this.centerService.newDetectFlameData$.subscribe(async data => {
+      await this.sendDetectFlameDataToWeb(data)
+    })
   }
 
   afterInit(server: Server) {
     this.logger.warn('[INIT] Websocket')
   }
 
-  async sendTemperatureDataToWeb(data: ITemperatureData): Promise<void> {
+  async sendDataToWeb<T>(event: SOCKET_EVENT, data: T): Promise<void> {
     if (!this.server) {
       // Very brutal step to prevent bug!
       return
@@ -64,29 +73,31 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       const socketIO = await this.eventsService.getSocketConnection(this.server, socket.socketId)
       if (socketIO) {
         socketIO.emit(
-          SOCKET_EVENT.TEMPERATURE_GET,
+          event,
           data,
         )
       }
     }))
   }
 
+  async sendTemperatureDataToWeb(data: ITemperatureData): Promise<void> {
+    await this.sendDataToWeb<ITemperatureData>(SOCKET_EVENT.TEMPERATURE_GET, data)
+  }
+
   async sendCameraRawDataToWeb(img: string): Promise<void> {
-    if (!this.server) {
-      // Very brutal step to prevent bug!
-      return
-    }
-    const sockets = await this.getWebSockets(DEVICE_TYPE.WEB)
-    await Promise.all(sockets.map(async socket => {
-      const socketIO = await this.eventsService.getSocketConnection(this.server, socket.socketId)
-      if (socketIO) {
-        socketIO.emit(
-          SOCKET_EVENT.CAMERA_RAW_GET,
-          // `data:image/jpeg;charset=utf-8;base64, ${img}`,
-          `data:image/png;base64, ${img}`
-        )
-      }
-    }))
+    await this.sendDataToWeb<string>(SOCKET_EVENT.CAMERA_RAW_GET, `data:image/png;base64, ${img}`)
+  }
+
+  async sendCameraFilterDataToWeb(img: string): Promise<void> {
+    await this.sendDataToWeb<string>(SOCKET_EVENT.CAMERA_FILTER_GET, `data:image/png;base64, ${img}`)
+  }
+
+  async sendFlameSensorDataToWeb(value: number): Promise<void> {
+    await this.sendDataToWeb<number>(SOCKET_EVENT.FLAME_SENSOR_GET, value)
+  }
+
+  async sendDetectFlameDataToWeb(value: number): Promise<void> {
+    await this.sendDataToWeb<number>(SOCKET_EVENT.DETECT_FLAME_GET, value)
   }
 
   @SubscribeMessage(SOCKET_EVENT.GPS_POST)
@@ -121,6 +132,38 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.eventsService.addCameraRawData(img)
   }
 
+  @SubscribeMessage(SOCKET_EVENT.CAMERA_FILTER_POST)
+  @Post(SOCKET_EVENT.CAMERA_FILTER_POST)
+  async addCameraFilterData(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() img: string,
+  ): Promise<void> {
+    if (!socket) { return }
+    this.eventsService.addCameraFilterData(img)
+  }
+
+  @SubscribeMessage(SOCKET_EVENT.FLAME_SENSOR_POST)
+  @Post(SOCKET_EVENT.FLAME_SENSOR_POST)
+  async addFlameSensorData(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() value: number,
+  ): Promise<void> {
+    if (!socket) { return }
+    value = Number(value) || 0
+    this.centerService.newFlameSensorDataSubject.next(value)
+  }
+
+  @SubscribeMessage(SOCKET_EVENT.DETECT_FLAME_POST)
+  @Post(SOCKET_EVENT.DETECT_FLAME_POST)
+  async addDetectFlameData(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() value: number,
+  ): Promise<void> {
+    if (!socket) { return }
+    value = Number(value) || 0
+    this.centerService.newDetectFlameDataSubject.next(value)
+  }
+
   async handleDisconnect(socket: Socket) {
     this.logger.warn(`Client disconnected: ${socket.id}`)
     await this.eventsService.userDisconnecting(socket.id)
@@ -136,8 +179,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       socket.disconnect(true)
       return
     }
-    this.getWebSockets(DEVICE_TYPE.RASPBERRY).then(() => {})
-    this.getWebSockets(DEVICE_TYPE.JETSON_NANO).then(() => {})
+    this.getWebSockets(DEVICE_TYPE.RASPBERRY).then(() => { })
+    this.getWebSockets(DEVICE_TYPE.JETSON_NANO).then(() => { })
     this.logger.log(`[INFO] New connection socket ${socket.id} - ${deviceType}`)
     await this.eventsService.userConnecting(deviceType, socket)
   }
