@@ -33,6 +33,10 @@ export class EventsService {
     return this.socketModel.findOne({ socketId })
   }
 
+  async getGPSFromSystem(systemType: SYSTEM_TYPE): Promise<IGPS> {
+    return this.gpsModel.findOne({ systemType })
+  }
+
   async addTemperatureData(
     temperaturePostDto: TemperaturePostDto,
   ): Promise<void> {

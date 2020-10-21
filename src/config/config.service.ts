@@ -15,7 +15,17 @@ export class ConfigService {
       PLACE_ID_JETSON_NANO: 'jet',
       GMAIL_USER: 'thcshiepphuoc2020@gmail.com',
       GMAIL_PASSWORD: 'khkt2020',
+      RECEIVED_FLAME_DETECTOR_GMAIL: 'linhdangkhanh8@gmail.com',
+      RECEIVED_FLAME_DETECTOR_PHONE_NUMBER: '0387544215',
     }
+  }
+
+  get receivedFlameDetectorGmail(): string {
+    return this.envConfig.RECEIVED_FLAME_DETECTOR_GMAIL
+  }
+
+  get receivedFlameDetectorPhoneNumber(): string {
+    return this.envConfig.RECEIVED_FLAME_DETECTOR_PHONE_NUMBER
   }
 
   get gmailTransport() {

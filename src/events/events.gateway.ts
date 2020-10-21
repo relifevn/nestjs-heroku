@@ -27,6 +27,7 @@ import { ConfigService } from 'src/config/config.service'
 import { TemperaturePostDto, GPSPostDto } from './dtos'
 import { ITemperature, ITemperatureData } from 'src/flame/interfaces'
 import { CenterService } from 'src/common/services'
+import { SYSTEM_TYPE } from 'src/common/constants'
 
 @Controller('events')
 @WebSocketGateway()
@@ -57,6 +58,10 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.centerService.newDetectFlameData$.subscribe(async data => {
       await this.sendDetectFlameDataToWeb(data)
     })
+    this.centerService.pushNotification$.subscribe(async date => {
+      await this.callFromFlameDetectorAndroid(date)
+      await this.sendSMSFromFlameDetectorAndroid(date)
+    })
   }
 
   afterInit(server: Server) {
@@ -69,6 +74,26 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       return
     }
     const sockets = await this.getWebSockets(DEVICE_TYPE.WEB)
+    await Promise.all(sockets.map(async socket => {
+      const socketIO = await this.eventsService.getSocketConnection(this.server, socket.socketId)
+      if (socketIO) {
+        socketIO.emit(
+          event,
+          data,
+        )
+      }
+    }))
+  }
+
+  async sendDataToAndroid<T>(systemType: SYSTEM_TYPE, event: SOCKET_EVENT, data: T): Promise<void> {
+    if (!this.server) {
+      // Very brutal step to prevent bug!
+      return
+    }
+    const deviceType = systemType === SYSTEM_TYPE.FLAME_DETECTOR
+      ? DEVICE_TYPE.FLAME_DETECTOR_ANDROID
+      : DEVICE_TYPE.DROWSINESS_DETECTOR_ANDROID
+    const sockets = await this.getWebSockets(deviceType)
     await Promise.all(sockets.map(async socket => {
       const socketIO = await this.eventsService.getSocketConnection(this.server, socket.socketId)
       if (socketIO) {
@@ -98,6 +123,32 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   async sendDetectFlameDataToWeb(value: number): Promise<void> {
     await this.sendDataToWeb<number>(SOCKET_EVENT.DETECT_FLAME_GET, value)
+  }
+
+  async callFromFlameDetectorAndroid(date: Date = new Date()): Promise<void> {
+    await this.sendDataToAndroid(
+      SYSTEM_TYPE.FLAME_DETECTOR,
+      SOCKET_EVENT.CALL,
+      {
+        phoneNumber: this.configService.receivedFlameDetectorPhoneNumber,
+      },
+    )
+  }
+
+  async sendSMSFromFlameDetectorAndroid(date: Date = new Date()): Promise<void> {
+    const gps = await this.eventsService.getGPSFromSystem(SYSTEM_TYPE.FLAME_DETECTOR)
+    const gpsLink = gps
+          ? `<a href="http://www.google.com/maps/place/${gps.lat},${gps.lng}">Bấm vào đây để xem vị trí</a>`
+          : ''
+
+    await this.sendDataToAndroid(
+      SYSTEM_TYPE.FLAME_DETECTOR,
+      SOCKET_EVENT.SEND_SMS,
+      {
+        phoneNumber: this.configService.receivedFlameDetectorPhoneNumber,
+        message: `Hệ thống phát hiện lửa vào lúc ${date.toLocaleString('vi')} ${gpsLink}`
+      },
+    )
   }
 
   @SubscribeMessage(SOCKET_EVENT.GPS_POST)
