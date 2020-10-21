@@ -157,9 +157,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @ConnectedSocket() socket: Socket,
     @MessageBody() gpsPostDto: GPSPostDto,
   ): Promise<void> {
-    console.log(SOCKET_EVENT.GPS_POST, gpsPostDto)
     if (!socket) { return }
     gpsPostDto = new GPSPostDto(gpsPostDto)
+    console.log(SOCKET_EVENT.GPS_POST, gpsPostDto)
     await this.eventsService.addGPSData(socket, gpsPostDto)
   }
 

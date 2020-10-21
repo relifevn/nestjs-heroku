@@ -63,6 +63,12 @@ export class EventsService {
           }
         }
       )
+    } else {
+      await this.gpsModel.create({
+        type: systemType,
+        lat: gpsPostDto.lat,
+        lng: gpsPostDto.lng,
+      } as IGPS)
     }
   }
 
