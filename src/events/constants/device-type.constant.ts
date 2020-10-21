@@ -6,3 +6,5 @@ export enum DEVICE_TYPE {
     FLAME_DETECTOR_ANDROID = 'flameDetectorAndroid', 
     DROWSINESS_DETECTOR_ANDROID = 'drowsinessDetectorAndroid',
 }
+
+export const LIST_DEVICES = Object.values(DEVICE_TYPE)

@@ -22,7 +22,7 @@ import { EventsService } from './events.service'
 import { ObjectId } from 'mongodb'
 import { ISocket } from './interfaces'
 
-import { DEVICE_TYPE, SOCKET_EVENT } from './constants'
+import { DEVICE_TYPE, LIST_DEVICES, SOCKET_EVENT } from './constants'
 import { ConfigService } from 'src/config/config.service'
 import { TemperaturePostDto, GPSPostDto } from './dtos'
 import { ITemperature, ITemperatureData } from 'src/flame/interfaces'
@@ -138,8 +138,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async sendSMSFromFlameDetectorAndroid(date: Date = new Date()): Promise<void> {
     const gps = await this.eventsService.getGPSFromSystem(SYSTEM_TYPE.FLAME_DETECTOR)
     const gpsLink = gps
-          ? `<a href="http://www.google.com/maps/place/${gps.lat},${gps.lng}">Bấm vào đây để xem vị trí</a>`
-          : ''
+      ? `<a href="http://www.google.com/maps/place/${gps.lat},${gps.lng}">Bấm vào đây để xem vị trí</a>`
+      : ''
 
     await this.sendDataToAndroid(
       SYSTEM_TYPE.FLAME_DETECTOR,
@@ -225,7 +225,11 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     ...args: any[]
   ): Promise<void> {
     const deviceType = this.eventsService.getDeviceTypeFromClientSocketRequest(socket)
-    if (!deviceType || [DEVICE_TYPE.JETSON_NANO, DEVICE_TYPE.RASPBERRY, DEVICE_TYPE.WEB].findIndex(e => e == deviceType) == -1) {
+    if (
+      !deviceType
+      ||
+      LIST_DEVICES.findIndex(e => e == deviceType) == -1
+    ) {
       console.log('Server rejected socket connection!')
       socket.disconnect(true)
       return
