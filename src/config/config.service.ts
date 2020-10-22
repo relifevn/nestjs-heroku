@@ -32,11 +32,11 @@ export class ConfigService {
   }
 
   get receivedDrowsinessDetectorGmail(): string {
-    return this.envConfig.RECEIVED_FLAME_DETECTOR_GMAIL
+    return this.envConfig.RECEIVED_DROWSINESS_DETECTOR_GMAIL
   }
 
   get receivedDrowsinessDetectorPhoneNumber(): string {
-    return this.envConfig.RECEIVED_FLAME_DETECTOR_PHONE_NUMBER
+    return this.envConfig.RECEIVED_DROWSINESS_DETECTOR_PHONE_NUMBER
   }
 
   get gmailTransport() {
