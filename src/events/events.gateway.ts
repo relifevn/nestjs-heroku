@@ -138,7 +138,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async sendSMSFromFlameDetectorAndroid(date: Date = new Date()): Promise<void> {
     const gps = await this.eventsService.getGPSFromSystem(SYSTEM_TYPE.FLAME_DETECTOR)
     const gpsLink = gps
-      ? `<a href="http://www.google.com/maps/place/${gps.lat},${gps.lng}">Bấm vào đây để xem vị trí</a>`
+      ? `http://www.google.com/maps/place/${gps.lat},${gps.lng}`
       : ''
 
     await this.sendDataToAndroid(
