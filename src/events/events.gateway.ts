@@ -62,6 +62,10 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       await this.callFromFlameDetectorAndroid(date)
       await this.sendSMSFromFlameDetectorAndroid(date)
     })
+    this.centerService.pushNotificationDrowsinessDetector$.subscribe(async date => {
+      await this.callFromDrowsinessDetectorAndroid(date)
+      await this.sendSMSFromDrowsinessDetectorAndroid(date)
+    })
   }
 
   afterInit(server: Server) {
@@ -135,6 +139,16 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     )
   }
 
+  async callFromDrowsinessDetectorAndroid(date: Date = new Date()): Promise<void> {
+    await this.sendDataToAndroid(
+      SYSTEM_TYPE.DROWSINESS_DETECTOR,
+      SOCKET_EVENT.CALL,
+      {
+        phoneNumber: this.configService.receivedDrowsinessDetectorPhoneNumber,
+      },
+    )
+  }
+
   async sendSMSFromFlameDetectorAndroid(date: Date = new Date()): Promise<void> {
     const gps = await this.eventsService.getGPSFromSystem(SYSTEM_TYPE.FLAME_DETECTOR)
     const gpsLink = gps
@@ -147,6 +161,22 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       {
         phoneNumber: this.configService.receivedFlameDetectorPhoneNumber,
         message: `Hệ thống phát hiện lửa vào lúc ${date.toLocaleString('vi')} ${gpsLink}`
+      },
+    )
+  }
+
+  async sendSMSFromDrowsinessDetectorAndroid(date: Date = new Date()): Promise<void> {
+    const gps = await this.eventsService.getGPSFromSystem(SYSTEM_TYPE.DROWSINESS_DETECTOR)
+    const gpsLink = gps
+      ? `http://www.google.com/maps/place/${gps.lat},${gps.lng}`
+      : ''
+
+    await this.sendDataToAndroid(
+      SYSTEM_TYPE.DROWSINESS_DETECTOR,
+      SOCKET_EVENT.SEND_SMS,
+      {
+        phoneNumber: this.configService.receivedDrowsinessDetectorPhoneNumber,
+        message: `Hệ thống nhận biết tài xế buồn ngủ vào lúc ${date.toLocaleString('vi')} ${gpsLink}`
       },
     )
   }
@@ -213,6 +243,17 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     if (!socket) { return }
     value = Number(value) || 0
     this.centerService.newDetectFlameDataSubject.next(value)
+  }
+
+  @SubscribeMessage(SOCKET_EVENT.DROWSINESS_DETECTION_POST)
+  @Post(SOCKET_EVENT.DROWSINESS_DETECTION_POST)
+  async adddDrowsinessDetectionData(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() value: number,
+  ): Promise<void> {
+    if (!socket) { return }
+    value = Number(value) || 0
+    this.centerService.newDrowsinessDetectionDataSubject.next(value)
   }
 
   async handleDisconnect(socket: Socket) {

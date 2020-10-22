@@ -18,6 +18,9 @@ export enum SOCKET_EVENT {
   DETECT_FLAME_POST = 'detect-flame-post',
 
   CALL = 'call',
-  SEND_SMS = 'send-sms'
+  SEND_SMS = 'send-sms',
+
+  DROWSINESS_DETECTION_POST = 'drowsiness-detect-post',
+  DROWSINESS_DETECTION_GET = 'drowsiness-detect-get',
 }
 

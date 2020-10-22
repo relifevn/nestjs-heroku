@@ -37,7 +37,24 @@ export class GmailService {
       )
     })
 
-    this.centerService.pushNotificationSubject.next(new Date())
+    this.centerService.pushNotificationDrowsinessDetector$.subscribe(async date => {
+      const gps = await this.gpsModel.findOne({ type: SYSTEM_TYPE.DROWSINESS_DETECTOR })
+      const gpsLink = gps
+        ? `<a href="http://www.google.com/maps/place/${gps.lat},${gps.lng}">Bấm vào đây để xem vị trí</a>`
+        : ''
+      await this.sendMail(
+        this.configService.receivedDrowsinessDetectorGmail,
+        `Phát hiện tài xế đang buồn ngủ!!`,
+        `<p> 
+            Hệ thống phát hiện tài xế đang buồn ngủ vào lúc ${date.toLocaleString('vi')}
+          </p>
+          <p>
+            ${gpsLink}
+          </p>
+          `
+      )
+    })
+
   }
 
   async sendMail(
