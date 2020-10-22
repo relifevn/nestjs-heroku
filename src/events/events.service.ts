@@ -34,7 +34,7 @@ export class EventsService {
   }
 
   async getGPSFromSystem(systemType: SYSTEM_TYPE): Promise<IGPS> {
-    return this.gpsModel.findOne({ systemType })
+    return this.gpsModel.findOne({ type: systemType })
   }
 
   async addTemperatureData(
