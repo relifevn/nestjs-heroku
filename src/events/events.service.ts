@@ -45,6 +45,9 @@ export class EventsService {
 
   async addGPSData(socket: Socket, gpsPostDto: GPSPostDto): Promise<void> {
     const userSocket = await this.getSocketFromSocketId(socket.id)
+    if (gpsPostDto.lat === 0.0 && gpsPostDto.lng === 0.0) {
+      return
+    }
     const systemType = userSocket.deviceType === DEVICE_TYPE.FLAME_DETECTOR_ANDROID
       ? SYSTEM_TYPE.FLAME_DETECTOR
       : SYSTEM_TYPE.DROWSINESS_DETECTOR

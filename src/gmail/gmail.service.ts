@@ -24,7 +24,7 @@ export class GmailService {
       const gpsLink = gps
         ? `<a href="http://www.google.com/maps/place/${gps.lat},${gps.lng}">Bấm vào đây để xem vị trí</a>`
         : ''
-      await this.sendMailVerify(
+      await this.sendMail(
         this.configService.receivedFlameDetectorGmail,
         `Cảnh báo có lửa !!`,
         `<p> 
@@ -36,11 +36,11 @@ export class GmailService {
           `
       )
     })
+
+    this.centerService.pushNotificationSubject.next(new Date())
   }
 
-
-
-  async sendMailVerify(
+  async sendMail(
     email: string,
     subject: string,
     content: string,
