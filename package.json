@@ -30,13 +30,18 @@
     "@nestjs/mongoose": "^7.0.2",
     "@nestjs/platform-express": "^7.0.0",
     "@nestjs/platform-socket.io": "^7.4.4",
+    "@nestjs/swagger": "^4.6.1",
     "@nestjs/websockets": "^7.4.4",
+    "express": "^4.17.1",
+    "hbs": "^4.1.1",
+    "helmet": "^4.1.1",
     "mongodb": "^3.6.2",
     "mongoose": "^5.10.9",
     "query-string": "^6.13.6",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.5.4",
+    "swagger-ui-express": "^4.1.4",
     "url-parse": "^1.4.7"
   },
   "devDependencies": {

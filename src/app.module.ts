@@ -26,6 +26,7 @@ import { EventsModule } from './events/events.module'
     }),
     FlameModule,
     EventsModule,
+    ConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],

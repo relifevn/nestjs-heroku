@@ -16,8 +16,19 @@ export class ConfigService {
     }
   }
 
+  get homeConfig() {
+    return {
+      description: 'NestJS Heroku Server',
+      title: 'NestJS Heroku Server',
+      imageUrl: 'https://khkt-thcs-hiep-phuoc-server.herokuapp.com/images/1.jpg',
+      homeUrl: `https://khkt-thcs-hiep-phuoc-server.herokuapp.com/`,
+      iconUrl: `https://khkt-thcs-hiep-phuoc-server.herokuapp.com/icons/logo.png`,
+      backgroundUrl: `https://khkt-thcs-hiep-phuoc-server.herokuapp.com/images/1.jpg`,
+    }
+  }
+
   get publicKey(): string {
-    return this.envConfig.PUBLIC_KEY 
+    return this.envConfig.PUBLIC_KEY
   }
 
   get mongoURL(): string {
@@ -35,5 +46,5 @@ export class ConfigService {
   get placeIdJetsonNano(): string {
     return this.envConfig.PLACE_ID_JETSON_NANO
   }
-  
+
 }

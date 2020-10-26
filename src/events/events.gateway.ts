@@ -27,7 +27,10 @@ import { ConfigService } from 'src/config/config.service'
 import { TemperaturePostDto } from './dtos'
 import { ITemperature, ITemperatureData } from 'src/flame/interfaces'
 import { CenterService } from 'src/common/services'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
+@ApiTags('events')
+@ApiBearerAuth()
 @Controller('events')
 @WebSocketGateway()
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
