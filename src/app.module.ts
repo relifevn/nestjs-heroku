@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { ConfigModule } from './config/config.module'
 import { ConfigService } from './config/config.service'
 import { EventsModule } from './events/events.module'
+import { GmailModule } from './gmail/gmail.module'
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { EventsModule } from './events/events.module'
     FlameModule,
     EventsModule,
     ConfigModule,
+    GmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

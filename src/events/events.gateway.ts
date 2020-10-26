@@ -22,12 +22,13 @@ import { EventsService } from './events.service'
 import { ObjectId } from 'mongodb'
 import { ISocket } from './interfaces'
 
-import { DEVICE_TYPE, SOCKET_EVENT } from './constants'
+import { DEVICE_TYPE, LIST_DEVICES, SOCKET_EVENT } from './constants'
 import { ConfigService } from 'src/config/config.service'
-import { TemperaturePostDto } from './dtos'
+import { TemperaturePostDto, GPSPostDto } from './dtos'
 import { ITemperature, ITemperatureData } from 'src/flame/interfaces'
 import { CenterService } from 'src/common/services'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { SYSTEM_TYPE } from 'src/common/constants'
 
 @ApiTags('events')
 @ApiBearerAuth()
@@ -60,6 +61,14 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.centerService.newDetectFlameData$.subscribe(async data => {
       await this.sendDetectFlameDataToWeb(data)
     })
+    this.centerService.pushNotification$.subscribe(async date => {
+      await this.callFromFlameDetectorAndroid(date)
+      await this.sendSMSFromFlameDetectorAndroid(date)
+    })
+    this.centerService.pushNotificationDrowsinessDetector$.subscribe(async date => {
+      await this.callFromDrowsinessDetectorAndroid(date)
+      await this.sendSMSFromDrowsinessDetectorAndroid(date)
+    })
   }
 
   afterInit(server: Server) {
@@ -72,6 +81,26 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       return
     }
     const sockets = await this.getWebSockets(DEVICE_TYPE.WEB)
+    await Promise.all(sockets.map(async socket => {
+      const socketIO = await this.eventsService.getSocketConnection(this.server, socket.socketId)
+      if (socketIO) {
+        socketIO.emit(
+          event,
+          data,
+        )
+      }
+    }))
+  }
+
+  async sendDataToAndroid<T>(systemType: SYSTEM_TYPE, event: SOCKET_EVENT, data: T): Promise<void> {
+    if (!this.server) {
+      // Very brutal step to prevent bug!
+      return
+    }
+    const deviceType = systemType === SYSTEM_TYPE.FLAME_DETECTOR
+      ? DEVICE_TYPE.FLAME_DETECTOR_ANDROID
+      : DEVICE_TYPE.DROWSINESS_DETECTOR_ANDROID
+    const sockets = await this.getWebSockets(deviceType)
     await Promise.all(sockets.map(async socket => {
       const socketIO = await this.eventsService.getSocketConnection(this.server, socket.socketId)
       if (socketIO) {
@@ -101,6 +130,69 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   async sendDetectFlameDataToWeb(value: number): Promise<void> {
     await this.sendDataToWeb<number>(SOCKET_EVENT.DETECT_FLAME_GET, value)
+  }
+
+  async callFromFlameDetectorAndroid(date: Date = new Date()): Promise<void> {
+    await this.sendDataToAndroid(
+      SYSTEM_TYPE.FLAME_DETECTOR,
+      SOCKET_EVENT.CALL,
+      {
+        phoneNumber: this.configService.receivedFlameDetectorPhoneNumber,
+      },
+    )
+  }
+
+  async callFromDrowsinessDetectorAndroid(date: Date = new Date()): Promise<void> {
+    await this.sendDataToAndroid(
+      SYSTEM_TYPE.DROWSINESS_DETECTOR,
+      SOCKET_EVENT.CALL,
+      {
+        phoneNumber: this.configService.receivedDrowsinessDetectorPhoneNumber,
+      },
+    )
+  }
+
+  async sendSMSFromFlameDetectorAndroid(date: Date = new Date()): Promise<void> {
+    const gps = await this.eventsService.getGPSFromSystem(SYSTEM_TYPE.FLAME_DETECTOR)
+    const gpsLink = gps
+      ? `http://www.google.com/maps/place/${gps.lat},${gps.lng}`
+      : ''
+
+    await this.sendDataToAndroid(
+      SYSTEM_TYPE.FLAME_DETECTOR,
+      SOCKET_EVENT.SEND_SMS,
+      {
+        phoneNumber: this.configService.receivedFlameDetectorPhoneNumber,
+        message: `Hệ thống phát hiện lửa vào lúc ${date.toLocaleString('vi')} ${gpsLink}`
+      },
+    )
+  }
+
+  async sendSMSFromDrowsinessDetectorAndroid(date: Date = new Date()): Promise<void> {
+    const gps = await this.eventsService.getGPSFromSystem(SYSTEM_TYPE.DROWSINESS_DETECTOR)
+    const gpsLink = gps
+      ? `http://www.google.com/maps/place/${gps.lat},${gps.lng}`
+      : ''
+
+    await this.sendDataToAndroid(
+      SYSTEM_TYPE.DROWSINESS_DETECTOR,
+      SOCKET_EVENT.SEND_SMS,
+      {
+        phoneNumber: this.configService.receivedDrowsinessDetectorPhoneNumber,
+        message: `Hệ thống nhận biết tài xế buồn ngủ vào lúc ${date.toLocaleString('vi')} ${gpsLink}`
+      },
+    )
+  }
+
+  @SubscribeMessage(SOCKET_EVENT.GPS_POST)
+  @Post(SOCKET_EVENT.GPS_POST)
+  async addGPSData(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() gpsPostDto: GPSPostDto,
+  ): Promise<void> {
+    if (!socket) { return }
+    gpsPostDto = new GPSPostDto(gpsPostDto)
+    await this.eventsService.addGPSData(socket, gpsPostDto)
   }
 
   @SubscribeMessage(SOCKET_EVENT.TEMPERATURE_POST)
@@ -156,6 +248,17 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.centerService.newDetectFlameDataSubject.next(value)
   }
 
+  @SubscribeMessage(SOCKET_EVENT.DROWSINESS_DETECTION_POST)
+  @Post(SOCKET_EVENT.DROWSINESS_DETECTION_POST)
+  async adddDrowsinessDetectionData(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() value: number,
+  ): Promise<void> {
+    if (!socket) { return }
+    value = Number(value) || 0
+    this.centerService.newDrowsinessDetectionDataSubject.next(value)
+  }
+
   async handleDisconnect(socket: Socket) {
     this.logger.warn(`Client disconnected: ${socket.id}`)
     await this.eventsService.userDisconnecting(socket.id)
@@ -166,7 +269,11 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     ...args: any[]
   ): Promise<void> {
     const deviceType = this.eventsService.getDeviceTypeFromClientSocketRequest(socket)
-    if (!deviceType || [DEVICE_TYPE.JETSON_NANO, DEVICE_TYPE.RASPBERRY, DEVICE_TYPE.WEB].findIndex(e => e == deviceType) == -1) {
+    if (
+      !deviceType
+      ||
+      LIST_DEVICES.findIndex(e => e == deviceType) == -1
+    ) {
       console.log('Server rejected socket connection!')
       socket.disconnect(true)
       return

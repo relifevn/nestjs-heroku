@@ -1,6 +1,7 @@
 import { SocketSchema } from "src/events/schemas"
 import { FlameSensorSchema, TemperatureSchema } from "src/flame/schemas"
-import { FLAME_SENSOR_MODEL, TEMPERATURE_MODEL, SOCKET_MODEL } from "../constants"
+import { FLAME_SENSOR_MODEL, TEMPERATURE_MODEL, SOCKET_MODEL, GPS_MODEL } from "../constants"
+import { GPSSchema } from "./gps.schema"
 
 export const MONGOOSE_MODELS = [
     {
@@ -14,5 +15,9 @@ export const MONGOOSE_MODELS = [
     {
         name: SOCKET_MODEL,
         schema: SocketSchema,
-    }
+    },
+    {
+        name: GPS_MODEL,
+        schema: GPSSchema,
+    },
 ]

@@ -3,14 +3,15 @@ import { Socket, Server } from 'socket.io'
 import { IncomingMessage } from 'http'
 import URLParse = require('url-parse')
 import * as QueryString from 'query-string'
-import { SOCKET_MODEL } from 'src/common/constants'
+import { GPS_MODEL, SOCKET_MODEL, SYSTEM_TYPE } from 'src/common/constants'
 import { InjectModel } from '@nestjs/mongoose'
 import { ISocket, ISocketQuery } from './interfaces'
-import { CustomModel } from 'src/common/interfaces'
-import { TemperaturePostDto } from './dtos'
+import { CustomModel, IGPS } from 'src/common/interfaces'
+import { GPSPostDto, TemperaturePostDto } from './dtos'
 import { ITemperature } from 'src/flame/interfaces'
 import { CenterService } from 'src/common/services'
 import { FlameService } from 'src/flame/flame.service'
+import { DEVICE_TYPE } from './constants'
 
 @Injectable()
 export class EventsService {
@@ -19,16 +20,59 @@ export class EventsService {
     @InjectModel(SOCKET_MODEL)
     private readonly socketModel: CustomModel<ISocket, {}>,
 
+    @InjectModel(GPS_MODEL)
+    private readonly gpsModel: CustomModel<IGPS, {}>,
+
     private readonly centerService: CenterService,
     private readonly flameService: FlameService,
   ) {
     console.log('[INIT] EventsService')
   }
 
+  async getSocketFromSocketId(socketId: string): Promise<ISocket> {
+    return this.socketModel.findOne({ socketId })
+  }
+
+  async getGPSFromSystem(systemType: SYSTEM_TYPE): Promise<IGPS> {
+    return this.gpsModel.findOne({ type: systemType })
+  }
+
   async addTemperatureData(
     temperaturePostDto: TemperaturePostDto,
   ): Promise<void> {
     await this.flameService.addTemperatureData(temperaturePostDto)
+  }
+
+  async addGPSData(socket: Socket, gpsPostDto: GPSPostDto): Promise<void> {
+    const userSocket = await this.getSocketFromSocketId(socket.id)
+    if (gpsPostDto.lat === 0.0 && gpsPostDto.lng === 0.0) {
+      return
+    }
+    const systemType = userSocket.deviceType === DEVICE_TYPE.FLAME_DETECTOR_ANDROID
+      ? SYSTEM_TYPE.FLAME_DETECTOR
+      : SYSTEM_TYPE.DROWSINESS_DETECTOR
+    const existedGPS = await this.gpsModel.findOne({
+      type: systemType,
+    })
+    if (existedGPS) {
+      await this.gpsModel.updateOne(
+        {
+          type: systemType,
+        },
+        {
+          $set: {
+            lat: gpsPostDto.lat,
+            lng: gpsPostDto.lng,
+          }
+        }
+      )
+    } else {
+      await this.gpsModel.create({
+        type: systemType,
+        lat: gpsPostDto.lat,
+        lng: gpsPostDto.lng,
+      } as IGPS)
+    }
   }
 
   async addCameraRawData(img: string): Promise<void> {

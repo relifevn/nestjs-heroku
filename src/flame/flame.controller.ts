@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common'
+import { Controller, Get, Post } from '@nestjs/common'
 import { FlameService } from './flame.service'
 import { GetTemperatureResponseDto } from './dtos'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
