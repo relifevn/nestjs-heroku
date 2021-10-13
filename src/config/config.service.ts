@@ -2,13 +2,35 @@ export interface EnvConfig {
   [key: string]: string
 }
 
+/**
+  sudo docker-compose up -d
+
+  mongosh mongodb://thcshiepphuoc:nBdyRuH5VJtCNVDd@localhost:21111
+
+  use thcshiepphuoc
+
+  db.createUser({
+    user: "thcshiepphuoc",
+    pwd: "thcshiepphuoc",
+    roles: [{
+        role: "readWrite",
+        db: "thcshiepphuoc"
+    }],
+    mechanisms: [
+        "SCRAM-SHA-1"
+    ]
+  })
+
+  mongosh mongodb://thcshiepphuoc:thcshiepphuoc@18.222.144.236:21111/thcshiepphuoc
+ */
+
 export class ConfigService {
 
   private readonly envConfig: EnvConfig
 
   constructor() {
     this.envConfig = {
-      MONGODB_URL: 'mongodb+srv://re:Relife123@cluster0.at05x.mongodb.net/appdb?retryWrites=true&w=majority',
+      MONGODB_URL: 'mongodb://thcshiepphuoc:thcshiepphuoc@18.222.144.236:21111/thcshiepphuoc',
       PLACE_ID_FLAME_WEB: 'flameWeb',
       PLACE_ID_DROWSINESS_WEB: 'drowsinessWeb',
       PLACE_ID_PI: 'pi',
