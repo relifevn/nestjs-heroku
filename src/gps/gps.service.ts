@@ -14,7 +14,7 @@ export class GPSService {
 
 	async updateGPSData(body: UpdateGPSRequestDto): Promise<any> {
 		const { type, lat, lng } = body
-		return this.gpsModel.updateOne(
+		return this.gpsModel.findOneAndUpdate(
 			{
 				type,
 			},
@@ -23,6 +23,10 @@ export class GPSService {
 					lat,
 					lng,
 				},
+			},
+			{
+				new: true,
+				upsert: true,
 			},
 		)
 	}

@@ -7,30 +7,32 @@ import { ConfigModule } from './config/config.module'
 import { ConfigService } from './config/config.service'
 import { EventsModule } from './events/events.module'
 import { GmailModule } from './gmail/gmail.module'
+import { GPSModule } from './gps/gps.module'
 
 @Module({
-  imports: [
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.mongoURL,
-        options: {
-          useNewUrlParser: true,
-          useCreateIndex: true,
-          useFindAndModify: false,
-          useUnifiedTopology: true,
-          reconnectTries: 500,
-          reconnectInterval: 1000,
-        },
-      }),
-      inject: [ConfigService],
-    }),
-    FlameModule,
-    EventsModule,
-    ConfigModule,
-    GmailModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [
+		MongooseModule.forRootAsync({
+			imports: [ConfigModule],
+			useFactory: async (configService: ConfigService) => ({
+				uri: configService.mongoURL,
+				options: {
+					useNewUrlParser: true,
+					useCreateIndex: true,
+					useFindAndModify: false,
+					useUnifiedTopology: true,
+					reconnectTries: 500,
+					reconnectInterval: 1000,
+				},
+			}),
+			inject: [ConfigService],
+		}),
+		FlameModule,
+		EventsModule,
+		ConfigModule,
+		GmailModule,
+		GPSModule,
+	],
+	controllers: [AppController],
+	providers: [AppService],
 })
 export class AppModule {}
