@@ -180,8 +180,8 @@ export class EventsGateway
 			SOCKET_EVENT.SEND_SMS,
 			{
 				phoneNumber: this.configService.receivedFlameDetectorPhoneNumber,
-				message: `Hệ thống phát hiện lửa vào lúc ${date.toLocaleString(
-					'vi',
+				message: `Hệ thống phát hiện lửa vào lúc ${this.convertToVNDateTime(
+					date,
 				)} ${gpsLink}`,
 			},
 		)
@@ -202,11 +202,15 @@ export class EventsGateway
 			SOCKET_EVENT.SEND_SMS,
 			{
 				phoneNumber: this.configService.receivedDrowsinessDetectorPhoneNumber,
-				message: `Hệ thống nhận biết tài xế buồn ngủ vào lúc ${date.toLocaleString(
-					'vi',
+				message: `Hệ thống nhận biết tài xế buồn ngủ vào lúc ${this.convertToVNDateTime(
+					date,
 				)} ${gpsLink}`,
 			},
 		)
+	}
+
+	convertToVNDateTime(date): string {
+		return new Date(date.getTime() + 7 * 3600 * 1000).toISOString()
 	}
 
 	@SubscribeMessage(SOCKET_EVENT.GPS_POST)
