@@ -15,14 +15,14 @@ export class GmailService {
 		secure: true,
 		auth: {
 			type: 'OAuth2',
-			user: 'thcshiepphuoc2020@gmail.com', // SENDER_EMAIL_ADDRESS,
+			user: 'thcs.hiep.phuoc.khkt.2021@gmail.com', // SENDER_EMAIL_ADDRESS,
 			clientId:
-				'806917942860-h08emp26re674449bhc6l350p05s21h1.apps.googleusercontent.com', // MAILING_SERVICE_CLIENT_ID
-			clientSecret: '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', //'MAILING_SERVICE_CLIENT_SECRET'
+				'238640532605-37t7dfl4h9f7fsocbts37ji090sm1d2n.apps.googleusercontent.com', // MAILING_SERVICE_CLIENT_ID
+			clientSecret: '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', //'MAILING_SERVICE_CLIENT_SECRET'
 			refreshToken:
-				'1//04_NW4G3GOC9eCgYIARAAGAQSNwF-L9IrhSWLm72IJBPVAUkmWZNPuDfN2WsnCzfiJwlzc6N7vhSWuydXjq2pLCyGjQIaBioQy-8', //
+				'1//047xDrcDndUQ1CgYIARAAGAQSNwF-L9IrlFpcnxnCIEb9pw2IsKeyZtGwGZQ14FNg-M4Pc83EL5mIuxHi8Z3v5qd2MLurmeWf8kc', //
 			accessToken:
-				'ya29.a0ARrdaM_TyUPG8eBDYU97x8loIsASKK2ybzzQWnwJ7rqoVtatcGcz5RCAe3AWMhcnOnWJyUvh7QKF7a7oI3x-jezkxAt01C2etJqVTViooQH2uWF0W1w032YnEe1nUUTS3UtYvIMMgYq7mT0V-83dSd3lp1jd', // ACCESS_SERVICE_TOKEN
+				'ya29.a0ARrdaM-MK7_DagJM1hfQDyW_CNSWnjG6pV-BUSYHuntoEdY8n_l-NnbcIesNe5yEdkIJXeiOSPNZHfc8Jj35uCbTUdi2qxtmzlLDt8ky-XJ34s6ao5xvkWdliCYA4ih-9PFX0HX9M_6e9aKFRojUHoeMbb5s', // ACCESS_SERVICE_TOKEN
 		},
 	})
 
