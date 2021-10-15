@@ -20,9 +20,9 @@ export class GmailService {
 				'806917942860-h08emp26re674449bhc6l350p05s21h1.apps.googleusercontent.com', // MAILING_SERVICE_CLIENT_ID
 			clientSecret: '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', //'MAILING_SERVICE_CLIENT_SECRET'
 			refreshToken:
-				'1//04WZ51TCvy8XmCgYIARAAGAQSNwF-L9Ir_asvdfwYGzTuvcO_qPRNrdwDRNqicgAqi6twEnkSARNsvhydRKBajze9dmZhPwnGIco', //
+				'1//04_NW4G3GOC9eCgYIARAAGAQSNwF-L9IrhSWLm72IJBPVAUkmWZNPuDfN2WsnCzfiJwlzc6N7vhSWuydXjq2pLCyGjQIaBioQy-8', //
 			accessToken:
-				'ya29.a0ARrdaM-pYh47Gb-UdmKQDH5rqLxfxTUkkW4a9zj4-ZTQfxAakxxNTai1TGkJgVjaYg3qM60ZpKPrapmVTbBZ4PRnEUw5A6O4bvJZJqcfw-1WUPRRDwsUQDvpAox2QExLXsau489BtsUCZ9BKNIc6-EpNL5Nr', // ACCESS_SERVICE_TOKEN
+				'ya29.a0ARrdaM_TyUPG8eBDYU97x8loIsASKK2ybzzQWnwJ7rqoVtatcGcz5RCAe3AWMhcnOnWJyUvh7QKF7a7oI3x-jezkxAt01C2etJqVTViooQH2uWF0W1w032YnEe1nUUTS3UtYvIMMgYq7mT0V-83dSd3lp1jd', // ACCESS_SERVICE_TOKEN
 		},
 	})
 
